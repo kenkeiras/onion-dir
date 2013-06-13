@@ -12,6 +12,7 @@ from twisted.names.common import ResolverBase
 PORT = 53
 TOR_SERVER = ("127.0.0.1", 9050)
 TIMEOUT = 3600
+INTERFACE = "127.0.0.1"
 
 # Protocol specific values
 IPv4_Addr = 1
@@ -66,5 +67,5 @@ resolver = TorResolver()
 factory = server.DNSServerFactory(clients=[resolver])
 protocol = dns.DNSDatagramProtocol(factory)
 
-reactor.listenUDP(PORT, protocol)
+reactor.listenUDP(PORT, protocol, interface=INTERFACE)
 reactor.run()
