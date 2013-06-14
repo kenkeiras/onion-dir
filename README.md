@@ -16,8 +16,8 @@ through [pip](https://pypi.python.org/pypi) with the command:
 `pip install twisted`
 
 
-Usage
------
+Usage from the command line
+---------------------------
 
 Syntax: `onion-dir.py (-f|-d) [-p <pidfile>] [-h]`
 
@@ -25,3 +25,10 @@ Syntax: `onion-dir.py (-f|-d) [-p <pidfile>] [-h]`
 -d: Launch in the background (default)  
 -p: Save the process ID in the specified file  
 -h: Show this help and exit  
+
+Install as a System V service
+-----------------------------
+
+To install it execute the _install_service.sh_ script as root, to uninstall _execute uninstall_service.sh_
+
+Installed this way, it can be launched with `service onion-dir start` and stopped whith `service onion-dir stop`
