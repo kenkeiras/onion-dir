@@ -21,27 +21,32 @@ INTERFACE = "127.0.0.1"
 # Protocol specific values
 IPv4_Addr = 1
 IPv6_Addr = 4
-Tor_Succeed = 0 # Query succeeded
+Tor_Succeed = 0  # Query succeeded
+
 
 def unpack_ipv4_addr(raw_value):
     '''Converts a raw binary IPv4 address into it's dot-separated form.'''
     return '.'.join(map(lambda x: str(ord(x)), raw_value))
 
+
 def unpack_ipv6_addr(raw_value):
     '''Converts a raw binary IPv6 address into it's colon-separated form.'''
     return ':'.join(map(lambda x: hex(ord(x)), raw_value))
+
 
 def tor_lookup(sock, name):
     '''Looks up a name through a Tor socks5 server.'''
     name_len = struct.pack("B", len(name))
 
-    sock.sendall("\x05\x01\x00") # Authtentication (lack of)
-    authentication_check = sock.recv(2) # Should be 0x05 0x00 for SOCKS 5, no authentication
+    # Authtentication (lack of)
+    sock.sendall("\x05\x01\x00")
+    # Answer should be 0x05 0x00 for SOCKS 5, no authentication
+    authentication_check = sock.recv(2)
 
     # 0xF0 is Tor proxy RESOLVE command
     sock.sendall("\x05\xF0\x00\x03" + name_len + name + "\x00\x00")
     answer_confirmation = sock.recv(4)
-    version, code, reserved, addr_type = struct.unpack("BBBB", answer_confirmation)
+    version, code, _, addr_type = struct.unpack("BBBB", answer_confirmation)
 
     if code != Tor_Succeed:
         return False
@@ -51,6 +56,7 @@ def tor_lookup(sock, name):
 
     elif addr_type == IPv6_Addr:
         return unpack_ipv6_addr(sock.recv(16))
+
 
 class TorResolver(ResolverBase):
     def _lookup(self, name, cls, type, timeout=10):
@@ -75,22 +81,21 @@ class TorResolver(ResolverBase):
             ])
 
 
-
-
 def daemonize():
     '''Detach process.'''
     pid = os.fork()
-    if pid == 0: # Forked process
-        os.chdir('/') # Unlock directory
+    if pid == 0:  # Forked process
+        os.chdir('/')  # Unlock directory
         os.umask(0)
 
-    else: # Parent process
+    else:  # Parent process
         exit(0)
 
     # Detach file descriptors
     sys.stdin.close()
     sys.stdout.close()
     sys.stderr.close()
+
 
 def show_help(arg0='onion-dir.py'):
     '''Show CLI options.'''
