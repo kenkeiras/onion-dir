@@ -19,8 +19,9 @@ through [pip](https://pypi.python.org/pypi) with the command:
 Usage
 -----
 
-Syntax: `onion-dir.py (-f|-d) [-h]`
+Syntax: `onion-dir.py (-f|-d) [-p <pidfile>] [-h]`
 
 -f: Launch in foreground  
 -d: Launch in the background (default)  
+-p: Save the process ID in the specified file  
 -h: Show this help and exit  

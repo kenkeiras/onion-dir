@@ -99,24 +99,38 @@ def daemonize():
 
 def show_help(arg0='onion-dir.py'):
     '''Show CLI options.'''
-    print "Syntax: {arg0} (-f|-d) [-h]\n".format(arg0=arg0)
+    print "Syntax: {arg0} (-f|-d) [-p <pidfile>] [-h]\n".format(arg0=arg0)
     print "-f: Launch in foreground"
     print "-d: Launch in the background (default)"
+    print "-p: Save the process ID in the specified file"
     print "-h: Show this help and exit"
 
 
 if __name__ == "__main__":
-    for param in sys.argv[1:]:
+    pidfile = None
+    i = 1
+    while i < len(sys.argv):
+        param = sys.argv[i]
         if param == '-d':
             DAEMONIZE = True
         elif param == '-f':
             DAEMONIZE = False
+        elif param == '-p':
+            pidfile = sys.argv[i + 1]
+            i += 1
         elif param == '-h':
             show_help(sys.argv[0])
             exit(0)
+        else:
+            show_help(sys.argv[0])
+        i += 1
 
     if DAEMONIZE:
         daemonize()
+
+    if pidfile is not None:
+        with open(pidfile, "wt") as f:
+            f.write("{pid}\n".format(pid=os.getpid()))
 
     resolver = TorResolver()
     factory = server.DNSServerFactory(clients=[resolver])
