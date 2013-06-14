@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 #coding: utf-8
 
+import os
+import sys
 import struct
+
 from socket import socket
 
 from twisted.internet import defer, reactor
@@ -9,6 +12,7 @@ from twisted.names import server, dns
 from twisted.names.common import ResolverBase
 
 # Tunable values
+DAEMONIZE = True
 PORT = 53
 TOR_SERVER = ("127.0.0.1", 9050)
 TIMEOUT = 3600
@@ -63,9 +67,46 @@ class TorResolver(ResolverBase):
             ])
 
 
-resolver = TorResolver()
-factory = server.DNSServerFactory(clients=[resolver])
-protocol = dns.DNSDatagramProtocol(factory)
 
-reactor.listenUDP(PORT, protocol, interface=INTERFACE)
-reactor.run()
+def daemonize():
+    '''Detach process.'''
+    pid = os.fork()
+    if pid == 0: # Forked process
+        os.chdir('/') # Unlock directory
+        os.umask(0)
+
+    else: # Parent process
+        exit(0)
+
+    # Detach file descriptors
+    sys.stdin.close()
+    sys.stdout.close()
+    sys.stderr.close()
+
+def show_help(arg0='onion-dir.py'):
+    '''Show CLI options.'''
+    print "{argv0} (-f|-d) [-h]\n".format(argv0=argv0)
+    print "-f: Launch in foreground"
+    print "-d: Launch in the background (default)"
+    print "-h: Show this help and exit"
+
+
+if __name__ == "__main__":
+    for param in sys.argv[1:]:
+        if param == '-d':
+            DAEMONIZE = True
+        elif param == '-f':
+            DAEMONIZE = False
+        elif param == '-h':
+            show_help(sys.argv[0])
+            exit(0)
+
+    if DAEMONIZE:
+        daemonize()
+
+    resolver = TorResolver()
+    factory = server.DNSServerFactory(clients=[resolver])
+    protocol = dns.DNSDatagramProtocol(factory)
+
+    reactor.listenUDP(PORT, protocol, interface=INTERFACE)
+    reactor.run()
