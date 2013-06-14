@@ -62,9 +62,18 @@ class TorResolver(ResolverBase):
         if not result:
             return defer.succeed([(), (), ()])
 
-        return defer.succeed([
-            (dns.RRHeader(name, dns.A, dns.IN, TIMEOUT, dns.Record_A(result, TIMEOUT)),), (), (),
+        if '.' in result:  # Dot-separated IPv4 address
+            return defer.succeed([
+                (dns.RRHeader(name, dns.A, dns.IN, TIMEOUT,
+                              dns.Record_A(result, TIMEOUT)),), (), (),
             ])
+
+        else:  # Guess colon-separated IPv6 address
+            return defer.succeed([
+                (dns.RRHeader(name, dns.AAAA, dns.IN, TIMEOUT,
+                              dns.Record_AAAA(result, TIMEOUT)),), (), (),
+            ])
+
 
 
 
